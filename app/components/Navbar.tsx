@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { auth, signOut } from "@/lib/auth"
+import { NavLink } from "./NavLink"
 
 export default async function Navbar() {
   const session = await auth()
@@ -13,14 +14,10 @@ export default async function Navbar() {
           <Link href="/todos" className="font-bold text-xl tracking-tight text-blue-600 dark:text-blue-400">
             TodoApp
           </Link>
-          <div className="hidden sm:flex gap-4">
-            <Link href="/todos" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
-              Todos
-            </Link>
+          <div className="hidden sm:flex gap-6">
+            <NavLink href="/todos">Todos</NavLink>
             {session.user.role === "admin" && (
-              <Link href="/admin" className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors">
-                Admin
-              </Link>
+              <NavLink href="/admin">Admin</NavLink>
             )}
           </div>
         </div>

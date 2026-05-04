@@ -15,9 +15,9 @@ async function verifyAdmin() {
 export async function deleteUser(id: string) {
   const adminId = await verifyAdmin()
   
-  if (adminId === id) {
-    throw new Error("Cannot delete self")
-  }
+  const userToDelete = await prisma.user.findUnique({ where: { id } })
+  if (!userToDelete) throw new Error("User not found")
+  if (userToDelete.role === "admin") throw new Error("Cannot delete an admin user directly. Demote them first.")
 
   await prisma.user.update({
     where: { id },

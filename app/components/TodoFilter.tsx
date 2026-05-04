@@ -38,7 +38,13 @@ export default function TodoFilter() {
   )
 }
 
-function FilterButton({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
+interface FilterButtonProps {
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+function FilterButton({ label, active, onClick }: FilterButtonProps) {
   return (
     <button
       onClick={onClick}

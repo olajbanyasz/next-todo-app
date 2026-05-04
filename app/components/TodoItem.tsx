@@ -3,13 +3,17 @@
 import { useState, useTransition } from "react"
 import { toggleTodo, deleteTodo, updateTodoTitle } from "@/app/actions/todo-actions"
 
-type Todo = {
+interface Todo {
   id: string
   title: string
   completed: boolean
 }
 
-export default function TodoItem({ todo }: { todo: Todo }) {
+interface TodoItemProps {
+  todo: Todo
+}
+
+export default function TodoItem({ todo }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
   const [isPending, startTransition] = useTransition()

@@ -3,6 +3,11 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  scrollbar-gutter: stable;
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 @theme inline {
