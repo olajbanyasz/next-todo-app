@@ -75,3 +75,73 @@ export async function demoteUser(id: string) {
 
   revalidatePath("/admin")
 }
+
+export async function getAdminStats() {
+  await verifyAdmin()
+
+  const [
+    totalUsers,
+    totalAdmins,
+    totalTodos,
+    totalCompletedTodos,
+    totalActiveTodos,
+    totalDeletedTodos
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.user.count({ where: { role: "admin" } }),
+    prisma.todo.count(),
+    prisma.todo.count({ where: { completed: true } }),
+    prisma.todo.count({ where: { completed: false, deleted: false } }),
+    prisma.todo.count({ where: { deleted: true } })
+  ])
+
+  return {
+    totalUsers,
+    totalAdmins,
+    totalTodos,
+    totalCompletedTodos,
+    totalActiveTodos,
+    totalDeletedTodos
+  }
+}
+
+export async function getAdminUsers(filters: { email?: string, deleted?: string } = {}) {
+  await verifyAdmin()
+
+  const { email, deleted } = filters
+  const where: any = {}
+
+  if (email && email.length >= 3) {
+    where.email = { contains: email, mode: 'insensitive' }
+  }
+  
+  if (deleted === 'deleted') {
+    where.deleted = true
+  } else if (deleted === 'all') {
+    // No deleted filter
+  } else {
+    // Default: active only
+    where.deleted = false
+  }
+
+  const users = await prisma.user.findMany({
+    where,
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      deleted: true,
+      lastLoginAt: true,
+      _count: {
+        select: { todos: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  return users.map(u => ({
+    ...u,
+    todoCount: u._count.todos
+  }))
+}

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import UserList from "@/app/components/UserList"
 import StatsCards from "@/app/components/StatsCards"
 import UserFilter from "@/app/components/UserFilter"
+import { getAdminStats, getAdminUsers } from "@/app/actions/admin-actions"
 
 export const metadata = {
   title: "Admin Dashboard - TodoApp",
@@ -26,67 +26,9 @@ export default async function AdminPage({ searchParams }: PageProps) {
 
   const { email, deleted } = await searchParams
 
-  // Stats fetching
-  const [
-    totalUsers,
-    totalAdmins,
-    totalTodos,
-    totalCompletedTodos,
-    totalActiveTodos,
-    totalDeletedTodos
-  ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { role: "admin" } }),
-    prisma.todo.count(),
-    prisma.todo.count({ where: { completed: true } }),
-    prisma.todo.count({ where: { completed: false, deleted: false } }),
-    prisma.todo.count({ where: { deleted: true } })
-  ])
-
-  const stats = {
-    totalUsers,
-    totalAdmins,
-    totalTodos,
-    totalCompletedTodos,
-    totalActiveTodos,
-    totalDeletedTodos
-  }
-
-  // Users fetching with filters
-  const where: any = {}
-  if (email && email.length >= 3) {
-    where.email = { contains: email, mode: 'insensitive' }
-  }
-  
-  if (deleted === 'deleted') {
-    where.deleted = true
-  } else if (deleted === 'all') {
-    // No deleted filter
-  } else {
-    // Default: active only
-    where.deleted = false
-  }
-
-  const users = await prisma.user.findMany({
-    where,
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      deleted: true,
-      lastLoginAt: true,
-      _count: {
-        select: { todos: true }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
-
-  const formattedUsers = users.map(u => ({
-    ...u,
-    todoCount: u._count.todos
-  }))
+  // Fetch data using Server Actions
+  const stats = await getAdminStats()
+  const formattedUsers = await getAdminUsers({ email, deleted })
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-12">
