@@ -9,6 +9,13 @@ async function verifyAdmin() {
   if (!session?.user?.id || session.user.role !== "admin") {
     throw new Error("Unauthorized: Admin access required")
   }
+
+  // Update activity since the admin is active right now
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { lastActivityAt: new Date() }
+  })
+
   return session.user.id
 }
 

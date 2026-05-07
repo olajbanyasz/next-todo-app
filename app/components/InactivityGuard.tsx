@@ -1,18 +1,18 @@
 "use client"
 
 import { useEffect, useRef, useCallback } from "react"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 
-const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000
-const HEARTBEAT_INTERVAL_MS = 60 * 1000 // Send heartbeat every 60 seconds
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
+const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 
 export default function InactivityGuard() {
+  const { status } = useSession()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const sendHeartbeat = useCallback(() => {
     fetch("/api/heartbeat", { method: "POST" }).catch(() => {
-      // Silently ignore heartbeat failures
     })
   }, [])
 
@@ -26,6 +26,12 @@ export default function InactivityGuard() {
   }, [])
 
   useEffect(() => {
+    if (status === "authenticated") {
+      sendHeartbeat()
+    }
+  }, [status, sendHeartbeat])
+
+  useEffect(() => {
     const events: (keyof WindowEventMap)[] = [
       "mousemove",
       "mousedown",
@@ -37,8 +43,9 @@ export default function InactivityGuard() {
 
     resetTimer()
 
-    // Send initial heartbeat and start periodic heartbeats
-    sendHeartbeat()
+    if (status === "authenticated") {
+      sendHeartbeat();
+    }
     heartbeatRef.current = setInterval(sendHeartbeat, HEARTBEAT_INTERVAL_MS)
 
     const handleActivity = () => resetTimer()
@@ -53,7 +60,7 @@ export default function InactivityGuard() {
       }
       events.forEach((event) => window.removeEventListener(event, handleActivity))
     }
-  }, [resetTimer, sendHeartbeat])
+  }, [resetTimer, sendHeartbeat, status])
 
   return null
 }
