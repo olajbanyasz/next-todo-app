@@ -79,25 +79,35 @@ export async function demoteUser(id: string) {
 export async function getAdminStats() {
   await verifyAdmin()
 
+  const onlineThreshold = new Date(Date.now() - 2 * 60 * 1000) // 2 minutes ago
+
   const [
     totalUsers,
     totalAdmins,
     totalTodos,
     totalCompletedTodos,
     totalActiveTodos,
-    totalDeletedTodos
+    totalDeletedTodos,
+    onlineUsers
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { role: "admin" } }),
     prisma.todo.count(),
     prisma.todo.count({ where: { completed: true } }),
     prisma.todo.count({ where: { completed: false, deleted: false } }),
-    prisma.todo.count({ where: { deleted: true } })
+    prisma.todo.count({ where: { deleted: true } }),
+    prisma.user.count({
+      where: {
+        lastActivityAt: { gte: onlineThreshold },
+        deleted: false,
+      }
+    })
   ])
 
   return {
     totalUsers,
     totalAdmins,
+    onlineUsers,
     totalTodos,
     totalCompletedTodos,
     totalActiveTodos,

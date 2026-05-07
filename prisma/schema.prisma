@@ -23,6 +23,7 @@ model User {
   inactiveReason String?
   reactivatedAt  DateTime?
   lastLoginAt    DateTime?
+  lastActivityAt DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
