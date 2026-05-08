@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 
 async function verifyAdmin() {
@@ -20,7 +21,7 @@ async function verifyAdmin() {
 }
 
 export async function deleteUser(id: string) {
-  const adminId = await verifyAdmin()
+  await verifyAdmin()
   
   const userToDelete = await prisma.user.findUnique({ where: { id } })
   if (!userToDelete) throw new Error("User not found")
@@ -126,7 +127,7 @@ export async function getAdminUsers(filters: { email?: string, deleted?: string 
   await verifyAdmin()
 
   const { email, deleted } = filters
-  const where: any = {}
+  const where: Prisma.UserWhereInput = {}
 
   if (email && email.length >= 3) {
     where.email = { contains: email, mode: 'insensitive' }

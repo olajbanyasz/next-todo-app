@@ -1,13 +1,21 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GitHubProvider from "next-auth/providers/github"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import bcrypt from "bcryptjs"
 import { prisma } from "./prisma"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: PrismaAdapter(prisma as any) as any,
   session: { strategy: "jwt" },
+  trustHost: true,
   providers: [
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -23,7 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           where: { email: credentials.email as string }
         })
 
-        if (!user || user.deleted || user.inactive) {
+        if (!user || user.deleted || user.inactive || !user.password) {
           return null
         }
 
@@ -36,7 +44,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
-        // Update lastLoginAt and lastActivityAt
+        // Update lastLoginAt and lastActivityAt for credentials
         await prisma.user.update({
           where: { id: user.id },
           data: { 
@@ -58,7 +66,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.role = user.role
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.role = (user as any).role || "user"
       }
       return token
     },
@@ -68,6 +77,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = token.role as string
       }
       return session
+    }
+  },
+  events: {
+    async signIn({ user, account }) {
+      // Update lastLoginAt for OAuth sign-ins (this runs after the user is in the DB)
+      if (account?.provider !== "credentials" && user.id) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { 
+            lastLoginAt: new Date(),
+            lastActivityAt: new Date()
+          }
+        }).catch(_err => console.error("Error updating lastLoginAt in events.signIn:", _err))
+      }
     }
   },
   pages: {
