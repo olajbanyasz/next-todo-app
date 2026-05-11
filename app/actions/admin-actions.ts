@@ -159,7 +159,12 @@ export async function getAdminUsers(filters: { email?: string, deleted?: string 
   })
 
   return users.map(u => ({
-    ...u,
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: u.role,
+    deleted: u.deleted,
+    lastLoginAt: u.lastLoginAt,
     todoCount: u._count.todos
   }))
 }

@@ -5,7 +5,7 @@ import { deleteUser, restoreUser, promoteUser, demoteUser } from "@/app/actions/
 
 export type User = {
   id: string
-  email: string
+  email: string | null
   name: string | null
   role: string
   deleted: boolean

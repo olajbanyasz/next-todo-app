@@ -20,12 +20,16 @@ export const metadata: Metadata = {
 import Navbar from "@/app/components/Navbar";
 import InactivityGuard from "@/app/components/InactivityGuard";
 import SessionProvider from "@/app/components/SessionProvider";
+import NetRadioWidget from "@/app/components/NetRadioWidget";
+import { auth } from "@/lib/auth";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html
       lang="en"
@@ -38,6 +42,7 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
+          {session?.user && <NetRadioWidget />}
         </SessionProvider>
       </body>
     </html>

@@ -19,14 +19,13 @@ interface PageProps {
 
 export default async function AdminPage({ searchParams }: PageProps) {
   const session = await auth()
-  
+
   if (!session?.user || session.user.role !== "admin") {
     redirect("/todos")
   }
 
   const { email, deleted } = await searchParams
 
-  // Fetch data using Server Actions
   const stats = await getAdminStats()
   const formattedUsers = await getAdminUsers({ email, deleted })
 
@@ -40,7 +39,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
       </div>
 
       <StatsCards stats={stats} />
-      
+
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4 flex items-center gap-2">
           User Management

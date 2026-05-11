@@ -4,7 +4,7 @@ import { NavLink } from "./NavLink"
 
 export default async function Navbar() {
   const session = await auth()
-  
+
   if (!session?.user) return null
 
   return (
@@ -17,7 +17,7 @@ export default async function Navbar() {
           <div className="hidden sm:flex gap-6">
             <NavLink href="/todos">Todos</NavLink>
             {session.user.role === "admin" && (
-              <NavLink href="/admin">Admin</NavLink>
+              <NavLink href="/user-management">User Management</NavLink>
             )}
           </div>
         </div>
