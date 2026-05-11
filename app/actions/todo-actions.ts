@@ -3,15 +3,16 @@
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 
 const createTodoSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
 })
 
-export async function createTodo(prevState: any, formData: FormData) {
+export async function createTodo(_prevState: unknown, formData: FormData) {
   const session = await auth()
-  
+
   if (!session?.user?.id) {
     return { message: "Unauthorized" }
   }
@@ -34,18 +35,18 @@ export async function createTodo(prevState: any, formData: FormData) {
         userId: session.user.id,
       },
     })
-    
+
     // Clear the form and show success
     revalidatePath("/todos")
     return { message: "Todo added successfully", success: true }
-  } catch (error) {
+  } catch (_err) {
     return { message: "Failed to create todo" }
   }
 }
 
 export async function toggleTodo(id: string) {
   const session = await auth()
-  
+
   if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }
@@ -59,9 +60,9 @@ export async function toggleTodo(id: string) {
   }
 
   const completed = !todo.completed
-  
-  const updateData: any = { completed }
-  
+
+  const updateData: Prisma.TodoUpdateInput = { completed }
+
   if (completed) {
     updateData.completedAt = new Date()
     if (!todo.completionEventCounted) {
@@ -81,7 +82,7 @@ export async function toggleTodo(id: string) {
 
 export async function deleteTodo(id: string) {
   const session = await auth()
-  
+
   if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }
@@ -96,7 +97,7 @@ export async function deleteTodo(id: string) {
 
 export async function updateTodoTitle(id: string, title: string) {
   const session = await auth()
-  
+
   if (!session?.user?.id) {
     throw new Error("Unauthorized")
   }

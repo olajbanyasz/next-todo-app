@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import Navbar from "@/app/components/Navbar"
 import AddTodoForm from "@/app/components/AddTodoForm"
 import TodoList from "@/app/components/TodoList"
 
@@ -24,10 +23,8 @@ export default async function TodosPage() {
   })
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black transition-colors duration-300">
-      <Navbar />
-      
-      <main className="max-w-3xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen transition-colors duration-300">
+      <main className="max-w-5xl mx-auto px-4 py-12">
         <header className="mb-10 text-center sm:text-left">
           <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
             My Tasks
