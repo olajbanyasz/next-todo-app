@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Read 'metadataLength' bytes
-    let metadataBuffer = new Uint8Array(metadataLength);
+    const metadataBuffer = new Uint8Array(metadataLength);
     let metadataBytesRead = 0;
     
     if (lengthValue.length > 1) {

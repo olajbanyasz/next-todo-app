@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { Play, Pause, Music } from 'lucide-react'
+import { Play, Pause, Music, Hand, ChevronDown } from 'lucide-react'
 import {
   getRadioMetadata,
   getRadioStations,
@@ -18,6 +18,7 @@ import VolumeControl from './VolumeControl'
 
 const VOLUME_STORAGE_KEY = 'netradio_widget_volume'
 const STATION_STORAGE_KEY = 'netradio_widget_station_id'
+const POSITION_STORAGE_KEY = 'netradio_widget_position'
 const VOLUME_STEP = 5
 
 const NetRadioWidget: React.FC = () => {
@@ -30,6 +31,9 @@ const NetRadioWidget: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [streamTitle, setStreamTitle] = useState<string | null>(null)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragOffset = useRef({ x: 0, y: 0 })
   
   const [volume, setVolume] = useState<number>(() => {
     if (typeof window === 'undefined') return 80
@@ -44,6 +48,69 @@ const NetRadioWidget: React.FC = () => {
     () => stations.find((station) => station.id === selectedStationId),
     [stations, selectedStationId],
   )
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(POSITION_STORAGE_KEY)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+          setPosition(parsed)
+        }
+      } catch (e) {
+        console.error('Failed to parse radio position', e)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isDragging || typeof window === 'undefined') return
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newX = e.clientX - dragOffset.current.x
+      const newY = e.clientY - dragOffset.current.y
+      
+      // Keep widget within viewport
+      const x = Math.max(0, Math.min(window.innerWidth - 220, newX))
+      const y = Math.max(0, Math.min(window.innerHeight - 300, newY)) // roughly 300px height
+      
+      setPosition({ x, y })
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      if (position) {
+        window.localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(position))
+      }
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, position])
+
+  const startDragging = (e: React.MouseEvent) => {
+    if (!position) {
+      // Initialize position if it's the first drag
+      const rect = (e.currentTarget.closest('.radio-widget') || e.currentTarget.closest('.radio-minimized-btn'))?.getBoundingClientRect()
+      if (rect) {
+        dragOffset.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        }
+        setPosition({ x: rect.left, y: rect.top })
+      }
+    } else {
+      dragOffset.current = {
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      }
+    }
+    setIsDragging(true)
+  }
 
   useEffect(() => {
     const loadStations = async () => {
@@ -164,18 +231,32 @@ const NetRadioWidget: React.FC = () => {
       {isMinimized ? (
         <button 
           onClick={() => setIsMinimized(false)}
-          className="radio-minimized-btn shadow-lg animate-in zoom-in duration-200"
+          onMouseDown={startDragging}
+          className={`radio-minimized-btn shadow-lg animate-in zoom-in duration-200 ${isDragging ? 'dragging' : ''}`}
+          style={position ? { left: `${position.x}px`, top: `${position.y}px`, bottom: 'auto', right: 'auto' } : {}}
         >
           <Music size={20} className={isPlaying ? "animate-pulse text-blue-400" : ""} />
         </button>
       ) : (
-        <section className="radio-widget shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <section 
+          className={`radio-widget shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${isDragging ? 'dragging' : ''}`}
+          style={position ? { left: `${position.x}px`, top: `${position.y}px`, bottom: 'auto', right: 'auto' } : {}}
+        >
           <div className="radio-content">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
-                 <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-zinc-600'}`} />
-                 Zen Radio
-              </h3>
+              <div className="flex items-center gap-2">
+                <button 
+                  onMouseDown={startDragging}
+                  className="radio-drag-handle text-zinc-500 hover:text-white cursor-grab active:cursor-grabbing"
+                  title="Drag to move"
+                >
+                  <Hand size={14} />
+                </button>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isPlaying ? 'bg-green-500 animate-pulse' : 'bg-zinc-600'}`} />
+                  Zen Radio
+                </h3>
+              </div>
               <button 
                 onClick={() => setIsMinimized(true)}
                 className="text-zinc-500 hover:text-white transition-colors"
@@ -261,7 +342,5 @@ const NetRadioWidget: React.FC = () => {
     </>
   )
 }
-
-import { ChevronDown } from 'lucide-react'
 
 export default NetRadioWidget
