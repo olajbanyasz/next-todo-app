@@ -16,6 +16,7 @@ export default async function Navbar() {
           </Link>
           <div className="hidden sm:flex gap-6">
             <NavLink href="/todos">Todos</NavLink>
+            <NavLink href="/stream">Stream</NavLink>
             {session.user.role === "admin" && (
               <NavLink href="/user-management">User Management</NavLink>
             )}
@@ -30,9 +31,9 @@ export default async function Navbar() {
               <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white dark:border-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 transition-transform group-hover:scale-105">
                 {session.user.image ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img 
-                    src={session.user.image} 
-                    alt={session.user.name || 'User'} 
+                  <img
+                    src={session.user.image}
+                    alt={session.user.name || 'User'}
                     className="w-full h-full object-cover"
                   />
                 ) : (
