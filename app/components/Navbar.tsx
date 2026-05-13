@@ -4,7 +4,7 @@ import { NavLink } from "./NavLink"
 
 export default async function Navbar() {
   const session = await auth()
-  
+
   if (!session?.user) return null
 
   return (
@@ -17,14 +17,35 @@ export default async function Navbar() {
           <div className="hidden sm:flex gap-6">
             <NavLink href="/todos">Todos</NavLink>
             {session.user.role === "admin" && (
-              <NavLink href="/admin">Admin</NavLink>
+              <NavLink href="/user-management">User Management</NavLink>
             )}
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
-            {session.user.email} <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 ml-2">{session.user.role}</span>
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
+              {session.user.email}
+            </span>
+            <div className="relative group cursor-help">
+              <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white dark:border-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 transition-transform group-hover:scale-105">
+                {session.user.image ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img 
+                    src={session.user.image} 
+                    alt={session.user.name || 'User'} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                    {session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
+              </div>
+              <div className="absolute top-full right-0 mt-2 px-2 py-1 bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 text-[10px] font-bold rounded shadow-xl opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0 pointer-events-none uppercase tracking-widest z-[60] whitespace-nowrap">
+                {session.user.role}
+              </div>
+            </div>
+          </div>
           <form action={async () => {
             "use server"
             await signOut({ redirectTo: "/login" })
