@@ -66,6 +66,8 @@ git add -A
 git commit -m "<your message here>"
 ```
 
+> **Note (PowerShell):** Do NOT chain commands with `&&` — PowerShell does not support it. Run each command separately.
+
 Verify the commit was created:
 
 ```powershell
