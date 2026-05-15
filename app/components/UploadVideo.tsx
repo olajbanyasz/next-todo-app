@@ -131,9 +131,9 @@ const UploadVideo: React.FC<UploadVideoProps> = ({ onUpload }) => {
         cancelOptions={cancelOptions}
         headerTemplate={headerTemplate}
         emptyTemplate={
-          <div className="flex flex-col items-center justify-center py-8 text-zinc-400">
-            <i className="pi pi-video text-4xl mb-2"></i>
-            <p className="m-0">No video selected. Drag and drop a video file here or use the browse button.</p>
+          <div className="flex flex-col items-center justify-center py-4 text-zinc-400">
+            <i className="pi pi-video text-2xl mb-1"></i>
+            <p className="m-0 text-sm">No video selected. Drag and drop here or browse.</p>
           </div>
         }
         onSelect={onSelect}

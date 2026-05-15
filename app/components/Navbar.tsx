@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { auth, signOut } from "@/lib/auth"
 import { NavLink } from "./NavLink"
+import { MobileMenu } from "./MobileMenu"
 
 export default async function Navbar() {
   const session = await auth()
@@ -10,11 +11,12 @@ export default async function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full backdrop-blur-xl bg-white/70 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800 transition-colors">
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link href="/todos" className="font-bold text-xl tracking-tight text-blue-600 dark:text-blue-400">
+        <div className="flex items-center gap-4 md:gap-8">
+          <MobileMenu userRole={session.user.role} userEmail={session.user.email} />
+          <Link href="/todos" className="hidden md:block font-bold text-xl tracking-tight text-blue-600 dark:text-blue-400">
             TodoApp
           </Link>
-          <div className="hidden sm:flex gap-6">
+          <div className="hidden md:flex gap-6">
             <NavLink href="/todos">Todos</NavLink>
             <NavLink href="/stream">Stream</NavLink>
             {session.user.role === "admin" && (
@@ -24,7 +26,7 @@ export default async function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden sm:block">
+            <span className="text-sm text-zinc-500 dark:text-zinc-400 hidden md:block">
               {session.user.email}
             </span>
             <div className="relative group cursor-help">
