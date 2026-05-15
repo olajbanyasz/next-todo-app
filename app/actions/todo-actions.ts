@@ -38,7 +38,7 @@ export async function createTodo(_prevState: unknown, formData: FormData) {
 
     // Clear the form and show success
     revalidatePath("/todos")
-    return { message: "Todo added successfully", success: true }
+    return { message: "Todo added successfully", success: true, timestamp: Date.now() }
   } catch {
     return { message: "Failed to create todo" }
   }
