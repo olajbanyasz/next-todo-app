@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +25,7 @@ import InactivityGuard from "@/app/components/InactivityGuard";
 import SessionProvider from "@/app/components/SessionProvider";
 import NetRadioWidget from "@/app/components/NetRadioWidget";
 import { auth } from "@/lib/auth";
+import { LoadingProvider } from "@/app/contexts/LoadingProvider";
 
 export default async function RootLayout({
   children,
@@ -37,12 +41,14 @@ export default async function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 transition-colors">
         <SessionProvider>
-          <InactivityGuard />
-          <Navbar />
-          <main className="flex-1">
-            {children}
-          </main>
-          {session?.user && <NetRadioWidget />}
+          <LoadingProvider>
+            <InactivityGuard />
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            {session?.user && <NetRadioWidget />}
+          </LoadingProvider>
         </SessionProvider>
       </body>
     </html>

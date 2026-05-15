@@ -33,7 +33,7 @@ export default function LoginPage() {
         router.push("/todos")
         router.refresh()
       }
-    } catch (_err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
       setIsLoading(false)
     }
@@ -43,7 +43,7 @@ export default function LoginPage() {
     setIsGitHubLoading(true)
     try {
       await signIn("github", { callbackUrl: "/todos" })
-    } catch (_err) {
+    } catch {
       setError("Failed to login with GitHub")
       setIsGitHubLoading(false)
     }

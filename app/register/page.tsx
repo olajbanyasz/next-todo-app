@@ -52,7 +52,7 @@ export default function RegisterPage() {
         router.push("/todos")
         router.refresh()
       }
-    } catch (_err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
       setIsLoading(false)
     }

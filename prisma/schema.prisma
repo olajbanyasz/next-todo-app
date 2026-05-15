@@ -59,6 +59,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   todos         Todo[]
+  videos        Video[]
 }
 
 model VerificationToken {
@@ -80,6 +81,18 @@ model Todo {
   user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Video {
+  id        String   @id @default(cuid())
+  title     String
+  url       String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
